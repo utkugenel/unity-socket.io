@@ -1,11 +1,7 @@
 --------------------------------------------------------------------------------
-        DEPRECATED                   SocketIO for Unity - v1.0.0                          
+        SocketIO for Unity - v1.0.0
+		(Tested with Unity 5.5.2f)
 --------------------------------------------------------------------------------
-
-# Deprecation Notice #
-
-  I haven't used this package in almost 2 years now, the main protocol will
-  probably work, but I no longer mantain it nor add support for new features.
 
 # Overview #
   
@@ -62,15 +58,20 @@
     
     a) Sending plain messages
        socket.Emit("user:login");
+	   
+	b) you can pass object.
+	class Foo{ string data;}
+	
+	socket.Emit("emitData", new Foo());
        
-    b) Sending additional data
+    c) Sending additional data
     
        Dictionary<string, string> data = new Dictionary<string, string>();
        data["email"] = "some@email.com";
        data["pass"] = Encrypt("1234");
        socket.Emit("user:login", new JSONObject(data));
        
-    c) Sometimes, you might want to get a callback when the client confirmed 
+    d) Sometimes, you might want to get a callback when the client confirmed 
        the message reception. To do this, simply pass a function as the last 
        parameter of .Emit()
        

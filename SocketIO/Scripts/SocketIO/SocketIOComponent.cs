@@ -35,6 +35,7 @@ using System.Threading;
 using UnityEngine;
 using WebSocketSharp;
 using WebSocketSharp.Net;
+using Newtonsoft.Json;
 
 namespace SocketIO
 {
@@ -89,35 +90,68 @@ namespace SocketIO
 
 		#region Unity interface
 
-		public void Awake()
-		{
-			encoder = new Encoder();
-			decoder = new Decoder();
-			parser = new Parser();
-			handlers = new Dictionary<string, List<Action<SocketIOEvent>>>();
-			ackList = new List<Ack>();
-			sid = null;
-			packetId = 0;
+        public void Awake()
+        {
+			if(!autoConnect) return;
+			
+            encoder = new Encoder();
+            decoder = new Decoder();
+            parser = new Parser();
+            handlers = new Dictionary<string, List<Action<SocketIOEvent>>>();
+            ackList = new List<Ack>();
+            sid = null;
+            packetId = 0;
 
-			ws = new WebSocket(url);
-			ws.OnOpen += OnOpen;
-			ws.OnMessage += OnMessage;
-			ws.OnError += OnError;
-			ws.OnClose += OnClose;
-			wsConnected = false;
+            ws = new WebSocket(url);
+            ws.OnOpen += OnOpen;
+            ws.OnMessage += OnMessage;
+            ws.OnError += OnError;
+            ws.OnClose += OnClose;
+            wsConnected = false;
 
-			eventQueueLock = new object();
-			eventQueue = new Queue<SocketIOEvent>();
+            eventQueueLock = new object();
+            eventQueue = new Queue<SocketIOEvent>();
 
-			ackQueueLock = new object();
-			ackQueue = new Queue<Packet>();
+            ackQueueLock = new object();
+            ackQueue = new Queue<Packet>();
 
-			connected = false;
+            connected = false;
 
-			#if SOCKET_IO_DEBUG
+#if SOCKET_IO_DEBUG
+            if(debugMethod == null) { debugMethod = Debug.Log; };
+#endif
+        }
+
+        public void init()
+        {
+            encoder = new Encoder();
+            decoder = new Decoder();
+            parser = new Parser();
+            handlers = new Dictionary<string, List<Action<SocketIOEvent>>>();
+            ackList = new List<Ack>();
+            sid = null;
+            packetId = 0;
+
+            ws = new WebSocket(url);
+            ws.OnOpen += OnOpen;
+            ws.OnMessage += OnMessage;
+            ws.OnError += OnError;
+            ws.OnClose += OnClose;
+            wsConnected = false;
+
+            eventQueueLock = new object();
+            eventQueue = new Queue<SocketIOEvent>();
+
+            ackQueueLock = new object();
+            ackQueue = new Queue<Packet>();
+
+            connected = false;
+            initCalled = true;
+
+#if SOCKET_IO_DEBUG
 			if(debugMethod == null) { debugMethod = Debug.Log; };
-			#endif
-		}
+#endif
+        }
 
 		public void Start()
 		{
@@ -235,6 +269,12 @@ namespace SocketIO
 		{
 			EmitMessage(-1, string.Format("[\"{0}\",\"{1}\"]", ev, str));
 		}
+		
+		public void Emit(string ev, object obj)
+        {
+            string str = JsonConvert.SerializeObject(obj);
+            EmitMessage(-1, string.Format("[\"{0}\",{1}]", ev, str));
+        }
 
 		public void Emit(string ev, JSONObject data)
 		{
